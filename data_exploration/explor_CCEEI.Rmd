@@ -43,8 +43,6 @@ gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon",
 mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv")
 
 population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv")
-
-
 ```
 
 
@@ -72,6 +70,49 @@ clean_mort <- mortality %>%
 kable(head(clean_mort))
 ```
 
+Let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
+
+```{r}
+## We can do it directly on each column like so:
+# population$X <- NULL
+# population$X.1 <- NULL
+# population$X.2 <- NULL
+
+## Or we can use a loop to do it.  This would be effective if there 
+## were a lot of columns we wanted to get rid of
+
+for (n in names(population)) {
+  if (grepl("X", n)) {
+    population[n] <- NULL
+  }
+}
+```
+
+Now we see that there is some metadata in the first five rows of the `Notes.` column. We should remove it and store it in a variable:
+
+```{r}
+population_meta <- paste(population$Notes.[1:5], collapse = "; ")
+population$Notes. <- NULL
+```
+
+We can store the metadata as a comment attribute of the population data frame:
+
+```{r}
+comment(population) <- population_meta
+```
+
+We can view the comment using similar syntax:
+
+```{r}
+comment(population)
+```
+
+The population estimates are split up by Population Unit (GBPU) and Management Unit (MU). Let's summarise by Population Unit. `dplyr` has some great functions for this sort of exploratory analysis.
+
+```{r}
+
+```
+
 
 
 
@@ -89,9 +130,13 @@ class(gbpu)
 summary(gbpu)
 ```
 
-From the metadata page, we know that there are several versions of the population units in this file. From the summary above it looks like the version is stored in the `GBPU_VERS`. Let's only use the latest version (2012). Note that we can 
+From the [metadata page](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb), we know that there are several versions of the population units in this file. From the summary above it looks like the version is stored in the `GBPU_VERS`. Let's only use the latest version (2012). Note that we can use subsetting using `[` just like we do on normal data frames.
+
+We can then plot the polygons to have a quick look.
 
 ```{r}
 gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
+plot(gbpu)
 ```
+
 
