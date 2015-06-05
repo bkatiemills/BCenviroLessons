@@ -9,6 +9,7 @@ library(dplyr)
 library(knitr)
 library(sp)
 library(rgdal)
+library(ggplot2)
 
 options(knitr.table.format = "markdown")
 ```
@@ -31,7 +32,7 @@ Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` pac
 unzip("data/DataBC_GBPU.zip", exdir = "data")
 
 gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
-                encoding = "ESRI Shapefile")
+                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
 ```
 
 ```
@@ -43,16 +44,16 @@ gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon",
 
 ```
 ## Warning in readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon",
-## encoding = "ESRI Shapefile"): Z-dimension discarded
+## encoding = "ESRI Shapefile", : Z-dimension discarded
 ```
 
 
 
 ```r
 ## getting the data
-mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv")
+mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv", stringsAsFactors = FALSE)
 
-population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv")
+population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
 ```
 
 
@@ -212,29 +213,29 @@ summary(gbpu)
 ## proj4string :
 ## [+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0]
 ## Data attributes:
-##     GBPU_TAG       GBPU_YRMOD   GBPU_VERS                      GBPU_NAME  
-##  Min.   : 0.00   Min.   : NA   2003 A:74   Blackwater-West Chilcotin:  5  
-##  1st Qu.:23.00   1st Qu.: NA   2003 B:72   Alta                     :  4  
-##  Median :42.50   Median : NA   2005  :70   Babine                   :  4  
-##  Mean   :42.68   Mean   :NaN   2012  :62   Bulkley-Lakes            :  4  
-##  3rd Qu.:64.00   3rd Qu.: NA               Cassiar                  :  4  
-##  Max.   :85.00   Max.   : NA               (Other)                  :212  
-##                  NA's   :278               NA's                     : 45  
-##     OBJECTID         GBPU_ID                             GBPU_DISP  
-##  Min.   :  1.00   Min.   : 841.0   Alta                       :  4  
-##  1st Qu.: 70.25   1st Qu.: 910.2   Babine                     :  4  
-##  Median :139.50   Median : 979.5   Blackwater-\\West Chilcotin:  4  
-##  Mean   :139.50   Mean   : 979.5   Bulkley-\\Lakes            :  4  
-##  3rd Qu.:208.75   3rd Qu.:1048.8   Cassiar                    :  4  
-##  Max.   :278.00   Max.   :1118.0   (Other)                    :212  
-##                                    NA's                       : 46  
-##       GBPUSTATUS  GPBU_W_BC
-##  Extirpated: 17   N: 21    
-##  Threatened: 40   Y:257    
-##  Viable    :221            
-##                            
-##                            
-##                            
+##     GBPU_TAG       GBPU_YRMOD   GBPU_VERS          GBPU_NAME        
+##  Min.   : 0.00   Min.   : NA   Length:278         Length:278        
+##  1st Qu.:23.00   1st Qu.: NA   Class :character   Class :character  
+##  Median :42.50   Median : NA   Mode  :character   Mode  :character  
+##  Mean   :42.68   Mean   :NaN                                        
+##  3rd Qu.:64.00   3rd Qu.: NA                                        
+##  Max.   :85.00   Max.   : NA                                        
+##                  NA's   :278                                        
+##     OBJECTID         GBPU_ID        GBPU_DISP          GBPUSTATUS       
+##  Min.   :  1.00   Min.   : 841.0   Length:278         Length:278        
+##  1st Qu.: 70.25   1st Qu.: 910.2   Class :character   Class :character  
+##  Median :139.50   Median : 979.5   Mode  :character   Mode  :character  
+##  Mean   :139.50   Mean   : 979.5                                        
+##  3rd Qu.:208.75   3rd Qu.:1048.8                                        
+##  Max.   :278.00   Max.   :1118.0                                        
+##                                                                         
+##   GPBU_W_BC        
+##  Length:278        
+##  Class :character  
+##  Mode  :character  
+##                    
+##                    
+##                    
 ## 
 ```
 
@@ -248,6 +249,53 @@ gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
 plot(gbpu)
 ```
 
-![](explor_CCEEI_files/figure-html/unnamed-chunk-12-1.png) 
+![](explor_CCEEI_files/figure-html/gbpu_map-1.png) 
 
+Now that we have a map of GBPUs, and a data frame with a single population estimate per GBPU, we can merge the population estimates into the SpatialPolygonsDataFrame.
+
+
+```r
+## First we should make sure that the GBPU names in the two objects are the same
+setdiff(na.omit(gbpu$GBPU_NAME), population_gbpu$GBPU)
+```
+
+```
+## [1] "North Purcells"         "Central-South Purcells"
+```
+
+```r
+setdiff(population_gbpu$GBPU, na.omit(gbpu$GBPU_NAME))
+```
+
+```
+## [1] "Central Purcells" "North Purcell"
+```
+
+```r
+population_gbpu$GBPU[population_gbpu$GBPU == "Central Purcells"] <- "Central-South Purcells"
+population_gbpu$GBPU[population_gbpu$GBPU == "North Purcell"] <- "North Purcells"
+
+## Check to make sure they are equal now
+all.equal(sort(population_gbpu$GBPU), sort(na.omit(gbpu$GBPU_NAME)))
+```
+
+```
+## [1] TRUE
+```
+
+Now lets plot the map using ggplot2, and fill the polygons based on population density. First we need to use the function `fortify` from `ggplot2`, to turn the SpatialPolygonsDataFrame into a data frame, then merge the attributes from `population_gbpu`:
+
+
+```r
+gbpu_df <- fortify(gbpu, region = "GBPU_NAME")
+gbpu_df <- merge(gbpu_df, population_gbpu, by.x = "id", by.y = "GBPU")
+
+ggplot(gbpu_df, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = Density)) + 
+  geom_path(colour = "white") + 
+  coord_map() + 
+  theme_minimal()
+```
+
+![](explor_CCEEI_files/figure-html/density-map-1.png) 
 

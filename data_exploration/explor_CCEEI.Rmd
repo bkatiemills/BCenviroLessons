@@ -13,6 +13,7 @@ library(dplyr)
 library(knitr)
 library(sp)
 library(rgdal)
+library(ggplot2)
 
 options(knitr.table.format = "markdown")
 ```
@@ -34,15 +35,15 @@ Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` pac
 unzip("data/DataBC_GBPU.zip", exdir = "data")
 
 gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
-                encoding = "ESRI Shapefile")
+                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
 ```
 
 
 ```{r}
 ## getting the data
-mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv")
+mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv", stringsAsFactors = FALSE)
 
-population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv")
+population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
 ```
 
 
@@ -148,4 +149,29 @@ gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
 plot(gbpu)
 ```
 
+Now that we have a map of GBPUs, and a data frame with a single population estimate per GBPU, we can merge the population estimates into the SpatialPolygonsDataFrame.
+
+```{r}
+## First we should make sure that the GBPU names in the two objects are the same
+setdiff(na.omit(gbpu$GBPU_NAME), population_gbpu$GBPU)
+setdiff(population_gbpu$GBPU, na.omit(gbpu$GBPU_NAME))
+population_gbpu$GBPU[population_gbpu$GBPU == "Central Purcells"] <- "Central-South Purcells"
+population_gbpu$GBPU[population_gbpu$GBPU == "North Purcell"] <- "North Purcells"
+
+## Check to make sure they are equal now
+all.equal(sort(population_gbpu$GBPU), sort(na.omit(gbpu$GBPU_NAME)))
+```
+
+Now lets plot the map using ggplot2, and fill the polygons based on population density. First we need to use the function `fortify` from `ggplot2`, to turn the SpatialPolygonsDataFrame into a data frame, then merge the attributes from `population_gbpu`:
+
+```{r density-map}
+gbpu_df <- fortify(gbpu, region = "GBPU_NAME")
+gbpu_df <- merge(gbpu_df, population_gbpu, by.x = "id", by.y = "GBPU")
+
+ggplot(gbpu_df, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = Density)) + 
+  geom_path(colour = "white") + 
+  coord_map() + 
+  theme_minimal()
+```
 
