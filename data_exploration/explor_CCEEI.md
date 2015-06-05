@@ -17,7 +17,7 @@ Now that we have the data, let's look at the top of it.
 
 
 ```r
-knitr::kable(head(mortality))
+knitr::kable(head(mortality, format = "markdown"))
 ```
 
      X   HUNT_YEAR    MU   GBPU_ID  GBPU_NAME                KILL_CODE     SEX   AGE_CLASS   SPATIAL   X.1   X.2   X.3   X.4                                                                                                                                                                                                                         
@@ -61,7 +61,7 @@ clean_mort <- mortality %>%
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
 
-knitr::kable(head(clean_mort))
+knitr::kable(head(clean_mort, format = "markdown"))
 ```
 
      X   HUNT_YEAR    MU   GBPU_ID  GBPU_NAME                KILL_CODE     SEX    minimum_age   maximum_age  SPATIAL 

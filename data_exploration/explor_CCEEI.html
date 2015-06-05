@@ -70,7 +70,7 @@ mortality &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants-
 
 population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv&quot;)</code></pre>
 <p>Now that we have the data, let’s look at the top of it.</p>
-<pre class="r"><code>knitr::kable(head(mortality))</code></pre>
+<pre class="r"><code>knitr::kable(head(mortality, format = &quot;markdown&quot;))</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -205,7 +205,7 @@ clean_mort &lt;- mortality %&gt;%
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
 
-knitr::kable(head(clean_mort))</code></pre>
+knitr::kable(head(clean_mort, format = &quot;markdown&quot;))</code></pre>
 <table>
 <thead>
 <tr class="header">
