@@ -11,8 +11,31 @@ output:
 library(tidyr)
 library(dplyr)
 library(knitr)
+library(sp)
+library(rgdal)
 
 options(knitr.table.format = "markdown")
+```
+
+
+### Grizzly Bear Population Units
+
+First, you will need to get the data. Unfortunately, unlike the `.csv` files 
+that we were able to read/download directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the 
+**Go To Resource** button and submit the form with the following settings:
+
+![](img/Griz_form.png)
+
+When you get the email with the link to the zip file, save it as `data/DataBC_GBPU.zip`
+
+Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
+
+```{r}
+
+unzip("data/DataBC_GBPU.zip", exdir = "data")
+
+gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
+                encoding = "ESRI Shapefile")
 ```
 
 
@@ -49,6 +72,8 @@ clean_mort <- mortality %>%
 
 kable(head(clean_mort))
 ```
+
+
 
 
 ## All columns should have the same data type
