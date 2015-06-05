@@ -22,7 +22,7 @@ that we were able to read/download directly from DataBC. Visit the [metadata rec
 
 ![](img/Griz_form.png)
 
-When you get the email with the link to the zip file, save it as `data/DataBC_GBPU.zip`
+When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
 
 Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
 
@@ -102,7 +102,152 @@ kable(head(clean_mort))
 | 12100|      1976| 402|      35|Flathead               |Hunter Kill |M   |          10|          14|no      |
 | 12099|      1976| 402|      35|Flathead               |Hunter Kill |M   |          15|          NA|no      |
 
+Let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
+
+
+```r
+## We can do it directly on each column like so:
+# population$X <- NULL
+# population$X.1 <- NULL
+# population$X.2 <- NULL
+
+## Or we can use a loop to do it.  This would be effective if there 
+## were a lot of columns we wanted to get rid of
+
+for (n in names(population)) {
+  if (grepl("X", n)) {
+    population[n] <- NULL
+  }
+}
+```
+
+Now we see that there is some metadata in the first five rows of the `Notes.` column. We should remove it and store it in a variable:
+
+
+```r
+population_meta <- paste(population$Notes.[1:5], collapse = "; ")
+population$Notes. <- NULL
+```
+
+We can store the metadata as a comment attribute of the population data frame:
+
+
+```r
+comment(population) <- population_meta
+```
+
+We can view the comment using similar syntax:
+
+
+```r
+comment(population)
+```
+
+```
+## [1] "Please see the full report for more information and details on how these estimates were made: http://wwwd.env.gov.bc.ca/fw/wildlife/docs/Grizzly_Bear_Pop_Est_Report_Final_2012.pdf; GBPU = Grizzly bear population unit; MU = Management Unit; Total_Area is the amount of usable grizzly bear habitat (i.e., removed large rivers, lakes, glaciers etc.); Density is the estimated number of Grizzly bears/1000 sq km."
+```
+
+The population estimates are split up by Population Unit (`GBPU`) and Management Unit (`MU`). Let's summarise by Population Unit. `dplyr` has some great functions for this sort of exploratory analysis.
+
+
+```r
+## First we set the grouping variable to be GBPU
+population_gbpu <- group_by(population, GBPU)
+
+## Then we can summarize based on those groups. We will need to recalculate 
+## the density.
+population_gbpu <- summarise(population_gbpu, 
+                             Estimate = sum(Estimate, na.rm = TRUE), 
+                             Total_Area = sum(Total_Area, na.rm = TRUE), 
+                             Density = Estimate / Total_Area * 1000)
+head(population_gbpu)
+```
+
+```
+## Source: local data frame [6 x 4]
+## 
+##                        GBPU Estimate Total_Area   Density
+## 1                      Alta      132      13239  9.970542
+## 2                    Babine      313      13805 22.672945
+## 3 Blackwater-West Chilcotin       53      20416  2.596003
+## 4             Bulkley-Lakes      439      22554 19.464397
+## 5                   Cassiar      612      35803 17.093540
+## 6          Central Monashee      147       6155 23.883022
+```
+
 
 
 
 ## All columns should have the same data type
+
+
+
+
+### Let's explore the gbpu spatial object. 
+
+It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
+
+
+```r
+class(gbpu)
+```
+
+```
+## [1] "SpatialPolygonsDataFrame"
+## attr(,"package")
+## [1] "sp"
+```
+
+```r
+summary(gbpu)
+```
+
+```
+## Object of class SpatialPolygonsDataFrame
+## Coordinates:
+##          min        max
+## x -138.87460 -112.37761
+## y   46.95695   60.00142
+## Is projected: FALSE 
+## proj4string :
+## [+proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0]
+## Data attributes:
+##     GBPU_TAG       GBPU_YRMOD   GBPU_VERS                      GBPU_NAME  
+##  Min.   : 0.00   Min.   : NA   2003 A:74   Blackwater-West Chilcotin:  5  
+##  1st Qu.:23.00   1st Qu.: NA   2003 B:72   Alta                     :  4  
+##  Median :42.50   Median : NA   2005  :70   Babine                   :  4  
+##  Mean   :42.68   Mean   :NaN   2012  :62   Bulkley-Lakes            :  4  
+##  3rd Qu.:64.00   3rd Qu.: NA               Cassiar                  :  4  
+##  Max.   :85.00   Max.   : NA               (Other)                  :212  
+##                  NA's   :278               NA's                     : 45  
+##     OBJECTID         GBPU_ID                             GBPU_DISP  
+##  Min.   :  1.00   Min.   : 841.0   Alta                       :  4  
+##  1st Qu.: 70.25   1st Qu.: 910.2   Babine                     :  4  
+##  Median :139.50   Median : 979.5   Blackwater-\\West Chilcotin:  4  
+##  Mean   :139.50   Mean   : 979.5   Bulkley-\\Lakes            :  4  
+##  3rd Qu.:208.75   3rd Qu.:1048.8   Cassiar                    :  4  
+##  Max.   :278.00   Max.   :1118.0   (Other)                    :212  
+##                                    NA's                       : 46  
+##       GBPUSTATUS  GPBU_W_BC
+##  Extirpated: 17   N: 21    
+##  Threatened: 40   Y:257    
+##  Viable    :221            
+##                            
+##                            
+##                            
+## 
+```
+
+From the [metadata page](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb), we know that there are several versions of the population units in this file. From the summary above it looks like the version is stored in the `GBPU_VERS`. Let's only use the latest version (2012). Note that we can use subsetting using `[` just like we do on normal data frames.
+
+We can then plot the polygons to have a quick look.
+
+
+```r
+gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
+plot(gbpu)
+```
+
+![](explor_CCEEI_files/figure-html/unnamed-chunk-12-1.png) 
+
+

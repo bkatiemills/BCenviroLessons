@@ -107,10 +107,19 @@ We can view the comment using similar syntax:
 comment(population)
 ```
 
-The population estimates are split up by Population Unit (GBPU) and Management Unit (MU). Let's summarise by Population Unit. `dplyr` has some great functions for this sort of exploratory analysis.
+The population estimates are split up by Population Unit (`GBPU`) and Management Unit (`MU`). Let's summarise by Population Unit. `dplyr` has some great functions for this sort of exploratory analysis.
 
 ```{r}
+## First we set the grouping variable to be GBPU
+population_gbpu <- group_by(population, GBPU)
 
+## Then we can summarize based on those groups. We will need to recalculate 
+## the density.
+population_gbpu <- summarise(population_gbpu, 
+                             Estimate = sum(Estimate, na.rm = TRUE), 
+                             Total_Area = sum(Total_Area, na.rm = TRUE), 
+                             Density = Estimate / Total_Area * 1000)
+head(population_gbpu)
 ```
 
 
@@ -134,7 +143,7 @@ From the [metadata page](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-po
 
 We can then plot the polygons to have a quick look.
 
-```{r}
+```{r gbpu_map}
 gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
 plot(gbpu)
 ```
