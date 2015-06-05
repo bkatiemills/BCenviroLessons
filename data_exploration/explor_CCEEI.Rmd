@@ -2,8 +2,54 @@
 title: "Exploring Grizzly Data"
 author: ""
 date: "June 5, 2015"
-output: html_document
+output:
+  html_document:
+    keep_md: true
 ---
+
+```{r message=FALSE}
+library(tidyr)
+library(dplyr)
+library(knitr)
+
+options(knitr.table.format = "markdown")
+```
+
+
+```{r}
+## getting the data
+mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv")
+
+population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv")
+
+
+```
+
+
+Now that we have the data, let's look at the top of it. 
+
+```{r results='asis'}
+knitr::kable(head(mortality, format = "markdown"))
+```
+
+We're going to use packages to organize and clean our data.
+
+```{r results='asis'}
+
+
+## let's get rid of unused columns
+mortality <- mortality %>% 
+  select(-contains("X."))
+  
+
+clean_mort <- mortality %>%
+  separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", extra = "merge") %>% 
+  mutate(minimum_age = extract_numeric(minimum_age),
+         maximum_age = extract_numeric(maximum_age))
+
+kable(head(clean_mort))
+```
+
 
 ### Grizzly Bear Population Units
 
