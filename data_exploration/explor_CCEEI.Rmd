@@ -21,13 +21,13 @@ population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-ani
 
 Now that we have the data, let's look at the top of it. 
 
-```{r}
+```{r results='asis'}
 knitr::kable(head(mortality))
 ```
 
 We're going to use packages to organize and clean our data.
 
-```{r}
+```{r results='asis'}
 library(tidyr)
 library(dplyr)
 
