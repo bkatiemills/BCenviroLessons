@@ -26,12 +26,11 @@ that we were able to read/download directly from DataBC. Visit the [metadata rec
 
 ![](img/Griz_form.png)
 
-When you get the email with the link to the zip file, save it as `data/DataBC_GBPU.zip`
+When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
 
 Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
 
-```{r}
-
+```{r messate = FALSE}
 unzip("data/DataBC_GBPU.zip", exdir = "data")
 
 gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
@@ -77,3 +76,22 @@ kable(head(clean_mort))
 
 
 ## All columns should have the same data type
+
+
+
+
+### Let's explore the gbpu spatial object. 
+
+It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
+
+```{r}
+class(gbpu)
+summary(gbpu)
+```
+
+From the metadata page, we know that there are several versions of the population units in this file. From the summary above it looks like the version is stored in the `GBPU_VERS`. Let's only use the latest version (2012). Note that we can 
+
+```{r}
+gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
+```
+
