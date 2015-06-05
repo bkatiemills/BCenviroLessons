@@ -25,7 +25,7 @@ Now that we have the data, let's look at the top of it.
 
 
 ```r
-knitr::kable(head(mortality, format = "markdown"))
+kable(head(mortality))
 ```
 
 
@@ -47,7 +47,13 @@ We're going to use packages to organize and clean our data.
 mortality <- mortality %>% 
   select(-contains("X."))
   
+mortality$AGE_CLASS %>% unique
+```
 
+[1] '5-9   '0-2   <NA>   '10-14 '15+   '3-4   'Juvnl 'Adult
+Levels: '0-2 '10-14 '15+ '3-4 '5-9 'Adult 'Juvnl
+
+```r
 clean_mort <- mortality %>%
   separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", extra = "merge") %>% 
   mutate(minimum_age = extract_numeric(minimum_age),
@@ -68,3 +74,4 @@ kable(head(clean_mort))
 | 12099|      1976| 402|      35|Flathead               |Hunter Kill |M   |          15|          NA|no      |
 
 
+## All columns should have the same data type

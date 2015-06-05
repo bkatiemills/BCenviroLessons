@@ -75,7 +75,7 @@ mortality &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants-
 
 population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv&quot;)</code></pre>
 <p>Now that we have the data, let’s look at the top of it.</p>
-<pre class="r"><code>knitr::kable(head(mortality, format = &quot;markdown&quot;))</code></pre>
+<pre class="r"><code>kable(head(mortality))</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -152,8 +152,9 @@ population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants
 mortality &lt;- mortality %&gt;% 
   select(-contains(&quot;X.&quot;))
   
-
-clean_mort &lt;- mortality %&gt;%
+mortality$AGE_CLASS %&gt;% unique</code></pre>
+<p>[1] ’5-9 ’0-2 <NA> ’10-14 ’15+ ’3-4 ’Juvnl ’Adult Levels: ’0-2 ’10-14 ’15+ ’3-4 ’5-9 ’Adult ’Juvnl</p>
+<pre class="r"><code>clean_mort &lt;- mortality %&gt;%
   separate(AGE_CLASS, into = c(&quot;minimum_age&quot;, &quot;maximum_age&quot;), sep = &quot;-&quot;, extra = &quot;merge&quot;) %&gt;% 
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
@@ -249,6 +250,9 @@ kable(head(clean_mort))</code></pre>
 </tr>
 </tbody>
 </table>
+<div id="all-columns-should-have-the-same-data-type" class="section level2">
+<h2>All columns should have the same data type</h2>
+</div>
 
 
 </div>

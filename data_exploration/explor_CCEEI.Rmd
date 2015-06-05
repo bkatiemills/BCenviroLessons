@@ -29,7 +29,7 @@ population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-ani
 Now that we have the data, let's look at the top of it. 
 
 ```{r results='asis'}
-knitr::kable(head(mortality, format = "markdown"))
+kable(head(mortality))
 ```
 
 We're going to use packages to organize and clean our data.
@@ -40,7 +40,7 @@ We're going to use packages to organize and clean our data.
 ## let's get rid of unused columns
 mortality <- mortality %>% 
   select(-contains("X."))
-  
+
 
 clean_mort <- mortality %>%
   separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", extra = "merge") %>% 
@@ -51,3 +51,4 @@ kable(head(clean_mort))
 ```
 
 
+## All columns should have the same data type
