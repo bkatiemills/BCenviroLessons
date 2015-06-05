@@ -7,6 +7,13 @@ output:
     keep_md: true
 ---
 
+```{r message=FALSE}
+library(tidyr)
+library(dplyr)
+library(knitr)
+
+options(knitr.table.format = "markdown")
+```
 
 
 ```{r}
@@ -28,8 +35,7 @@ knitr::kable(head(mortality, format = "markdown"))
 We're going to use packages to organize and clean our data.
 
 ```{r results='asis'}
-library(tidyr)
-library(dplyr)
+
 
 ## let's get rid of unused columns
 mortality <- mortality %>% 
@@ -41,7 +47,7 @@ clean_mort <- mortality %>%
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
 
-knitr::kable(head(clean_mort, format = "markdown"))
+kable(head(clean_mort))
 ```
 
 

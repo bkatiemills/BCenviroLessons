@@ -65,6 +65,11 @@ img {
 </div>
 
 
+<pre class="r"><code>library(tidyr)
+library(dplyr)
+library(knitr)
+
+options(knitr.table.format = &quot;markdown&quot;)</code></pre>
 <pre class="r"><code>## getting the data
 mortality &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv&quot;)
 
@@ -98,29 +103,9 @@ population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants
 <td align="left">Stein-Nahatlatch</td>
 <td align="left">Hunter Kill</td>
 <td align="left">M</td>
-<td align="left">’5-9</td>
-<td align="left">no</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">Notes</td>
+<td align="left">‘5-9 |no |NA |NA |NA |Notes | | 12137| 1976| 332| 36|South Chilcotin Ranges |Hunter Kill |M |’0-2 |no |NA |NA |NA |Prior to 2004, road and rail kills were not distinguished and were documented with ’Pick Ups’.</td>
 </tr>
 <tr class="even">
-<td align="right">12137</td>
-<td align="right">1976</td>
-<td align="right">332</td>
-<td align="right">36</td>
-<td align="left">South Chilcotin Ranges</td>
-<td align="left">Hunter Kill</td>
-<td align="left">M</td>
-<td align="left">’0-2</td>
-<td align="left">no</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">Prior to 2004, road and rail kills were not distinguished and were documented with ‘Pick Ups’.</td>
-</tr>
-<tr class="odd">
 <td align="right">12077</td>
 <td align="right">1976</td>
 <td align="right">332</td>
@@ -135,7 +120,7 @@ population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants
 <td align="left">NA</td>
 <td align="left">A Limited Entry Hunt (LEH) was instituted province-wide for grizzly bears in 1996.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="right">12090</td>
 <td align="right">1976</td>
 <td align="right">402</td>
@@ -143,27 +128,7 @@ population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants
 <td align="left">Flathead</td>
 <td align="left">Hunter Kill</td>
 <td align="left">F</td>
-<td align="left">’10-14</td>
-<td align="left">no</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">There was a province-wide moratorium on hunting grizzly bears in the spring of 2001.</td>
-</tr>
-<tr class="odd">
-<td align="right">12100</td>
-<td align="right">1976</td>
-<td align="right">402</td>
-<td align="right">35</td>
-<td align="left">Flathead</td>
-<td align="left">Hunter Kill</td>
-<td align="left">M</td>
-<td align="left">’10-14</td>
-<td align="left">no</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">A limited number of records with a value of ‘no’ in the SPATIAL column have not been spatially verified and thus may be assigned to the incorrect Management Unit (MU); most of these assignment errors are from 1976-1980.</td>
+<td align="left">‘10-14 |no |NA |NA |NA |There was a province-wide moratorium on hunting grizzly bears in the spring of 2001. | | 12100| 1976| 402| 35|Flathead |Hunter Kill |M |’10-14 |no |NA |NA |NA |A limited number of records with a value of ’no’ in the SPATIAL column have not been spatially verified and thus may be assigned to the incorrect Management Unit (MU); most of these assignment errors are from 1976-1980.</td>
 </tr>
 <tr class="even">
 <td align="right">12099</td>
@@ -183,18 +148,6 @@ population &lt;- read.csv(&quot;http://www.env.gov.bc.ca/soe/archive/data/plants
 </tbody>
 </table>
 <p>We’re going to use packages to organize and clean our data.</p>
-<pre class="r"><code>library(tidyr)
-library(dplyr)</code></pre>
-<pre><code>## 
-## Attaching package: 'dplyr'
-## 
-## The following object is masked from 'package:stats':
-## 
-##     filter
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>## let's get rid of unused columns
 mortality &lt;- mortality %&gt;% 
   select(-contains(&quot;X.&quot;))
@@ -205,7 +158,7 @@ clean_mort &lt;- mortality %&gt;%
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
 
-knitr::kable(head(clean_mort, format = &quot;markdown&quot;))</code></pre>
+kable(head(clean_mort))</code></pre>
 <table>
 <thead>
 <tr class="header">
