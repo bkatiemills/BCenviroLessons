@@ -1,0 +1,6 @@
+---
+title: "Exploring Grizzly Data"
+author: ""
+date: "June 5, 2015"
+output: html_document
+---
