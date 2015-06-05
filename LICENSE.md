@@ -1,3 +1,7 @@
+Contains information licensed under the [Open Government License – British Columbia](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf).
+
+Original code under MIT License:
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Bill Mills
