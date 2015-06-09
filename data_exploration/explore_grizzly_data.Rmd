@@ -22,9 +22,7 @@ library(ggplot2)
 options(knitr.table.format = "markdown")
 ```
 
-
-
-### Tabular grizzly data
+### Grizzly bear data: population estimates and mortality history
 
 DataBC has data on [population estimates](http://catalogue.data.gov.bc.ca/dataset/2012-grizzly-bear-population-estimates) and [mortality](http://catalogue.data.gov.bc.ca/dataset/history-of-grizzly-bear-mortalities). Let's download and explore both:
 
@@ -35,24 +33,7 @@ mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-anim
 population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
 ```
 
-### Grizzly Bear Population Units spatial data
-
-First, you will need to get the data. Unfortunately, unlike the `.csv` files, we are unable to read/download this directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the **Go To Resource** button and submit the form with the following settings:
-
-![](img/Griz_form.png)
-
-When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
-
-Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
-
-```{r messate = FALSE}
-unzip("data/DataBC_GBPU.zip", exdir = "data")
-
-gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
-                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
-```
-
-Now that we have the data, let's look at the tabular data first - here's a glimpse of it. 
+Now that we have the data, let's have a look. The `head` function shows us the first six rows of data: 
 
 ```{r results='asis'}
 kable(head(mortality))
@@ -77,7 +58,7 @@ clean_mort <- mortality %>%
 kable(head(clean_mort))
 ```
 
-Let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
+Next let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
 
 ```{r}
 ## We can do it directly on each column like so:
@@ -129,9 +110,24 @@ population_gbpu <- summarise(population_gbpu,
 head(population_gbpu)
 ```
 
-### Let's explore the gbpu spatial object. 
+### Grizzly Bear Population Units spatial data
 
-It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
+First, you will need to get the data. Unfortunately, unlike the `.csv` files, we are unable to read/download this directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the **Go To Resource** button and submit the form with the following settings:
+
+![](img/Griz_form.png)
+
+When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
+
+Next we'll unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
+
+```{r messate = FALSE}
+unzip("data/DataBC_GBPU.zip", exdir = "data")
+
+gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
+                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
+```
+
+Let's explore the gbpu spatial object. It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
 
 ```{r}
 class(gbpu)
