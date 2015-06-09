@@ -2,6 +2,10 @@
   
 June 5, 2015  
 
+In this lesson, we are going to be using open data from [DataBC](http://data.gov.bc.ca) to learn about cleaning and tidying data, and merging tabular data with spatial data so we can visualize it.
+
+We're going to use a number of packages in this lesson, so we will start with loading them all:
+
 
 ```r
 library(tidyr)
@@ -14,9 +18,7 @@ library(ggplot2)
 options(knitr.table.format = "markdown")
 ```
 
-
-
-### Tabular grizzly data
+### Grizzly bear data: population estimates and mortality history
 
 DataBC has data on [population estimates](http://catalogue.data.gov.bc.ca/dataset/2012-grizzly-bear-population-estimates) and [mortality](http://catalogue.data.gov.bc.ca/dataset/history-of-grizzly-bear-mortalities). Let's download and explore both:
 
@@ -28,37 +30,7 @@ mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-anim
 population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
 ```
 
-### Grizzly Bear Population Units spatial data
-
-First, you will need to get the data. Unfortunately, unlike the `.csv` files, we are unable to read/download this directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the **Go To Resource** button and submit the form with the following settings:
-
-![](img/Griz_form.png)
-
-When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
-
-Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
-
-
-```r
-unzip("data/DataBC_GBPU.zip", exdir = "data")
-
-gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
-                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
-```
-
-```
-## OGR data source with driver: ESRI Shapefile 
-## Source: "data/GBPU_BC", layer: "GBPU_BC_polygon"
-## with 278 features
-## It has 9 fields
-```
-
-```
-## Warning in readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon",
-## encoding = "ESRI Shapefile", : Z-dimension discarded
-```
-
-Now that we have the data, let's look at the tabular data first - here's a glimpse of it. 
+Now that we have the data, let's have a look. The `head` function shows us the first six rows of data: 
 
 
 ```r
@@ -106,7 +78,7 @@ kable(head(clean_mort))
 | 12100|      1976| 402|      35|Flathead               |Hunter Kill |M   |          10|          14|no      |
 | 12099|      1976| 402|      35|Flathead               |Hunter Kill |M   |          15|          NA|no      |
 
-Let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
+Next let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
 
 
 ```r
@@ -179,9 +151,37 @@ head(population_gbpu)
 ## 6          Central Monashee      147       6155 23.883022
 ```
 
-### Let's explore the gbpu spatial object. 
+### Grizzly Bear Population Units spatial data
 
-It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
+First, you will need to get the data. Unfortunately, unlike the `.csv` files, we are unable to read/download this directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the **Go To Resource** button and submit the form with the following settings:
+
+![](img/Griz_form.png)
+
+When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
+
+Next we'll unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
+
+
+```r
+unzip("data/DataBC_GBPU.zip", exdir = "data")
+
+gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
+                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
+```
+
+```
+## OGR data source with driver: ESRI Shapefile 
+## Source: "data/GBPU_BC", layer: "GBPU_BC_polygon"
+## with 278 features
+## It has 9 fields
+```
+
+```
+## Warning in readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon",
+## encoding = "ESRI Shapefile", : Z-dimension discarded
+```
+
+Let's explore the gbpu spatial object. It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
 
 
 ```r
