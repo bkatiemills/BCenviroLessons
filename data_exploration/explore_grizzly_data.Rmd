@@ -7,6 +7,10 @@ output:
     keep_md: true
 ---
 
+In this lesson, we are going to be using open data from [DataBC](http://data.gov.bc.ca) to learn about cleaning and tidying data, and merging tabular data with spatial data so we can visualize it.
+
+We're going to use a number of packages in this lesson, so we will start with loading them all:
+
 ```{r message=FALSE}
 library(tidyr)
 library(dplyr)
