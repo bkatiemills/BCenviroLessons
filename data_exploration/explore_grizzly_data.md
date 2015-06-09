@@ -15,11 +15,22 @@ options(knitr.table.format = "markdown")
 ```
 
 
-### Grizzly Bear Population Units
 
-First, you will need to get the data. Unfortunately, unlike the `.csv` files 
-that we were able to read/download directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the 
-**Go To Resource** button and submit the form with the following settings:
+### Tabular grizzly data
+
+DataBC has data on [population estimates](http://catalogue.data.gov.bc.ca/dataset/2012-grizzly-bear-population-estimates) and [mortality](http://catalogue.data.gov.bc.ca/dataset/history-of-grizzly-bear-mortalities). Let's download and explore both:
+
+
+```r
+## getting the data
+mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv", stringsAsFactors = FALSE)
+
+population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
+```
+
+### Grizzly Bear Population Units spatial data
+
+First, you will need to get the data. Unfortunately, unlike the `.csv` files, we are unable to read/download this directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the **Go To Resource** button and submit the form with the following settings:
 
 ![](img/Griz_form.png)
 
@@ -47,17 +58,7 @@ gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon",
 ## encoding = "ESRI Shapefile", : Z-dimension discarded
 ```
 
-
-
-```r
-## getting the data
-mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_bear_mortality_history.csv", stringsAsFactors = FALSE)
-
-population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
-```
-
-
-Now that we have the data, let's look at the top of it. 
+Now that we have the data, let's look at the tabular data first - here's a glimpse of it. 
 
 
 ```r
@@ -75,7 +76,7 @@ kable(head(mortality))
 | 12100|      1976| 402|      35|Flathead               |Hunter Kill |M   |'10-14    |no      |NA  |NA  |NA  |A limited number of records with a value of 'no' in the SPATIAL column have not been spatially verified and thus may be assigned to the incorrect Management Unit (MU); most of these assignment errors are from 1976-1980. |
 | 12099|      1976| 402|      35|Flathead               |Hunter Kill |M   |'15+      |no      |NA  |NA  |NA  |                                                                                                                                                                                                                            |
 
-We're going to use packages to organize and clean our data.
+We're going to use the [dplyr](https://github.com/hadley/dplyr) and [tidyr](https://github.com/hadley/tidyr) packages to organize and clean our data. First, we'll work on the mortality data:
 
 
 ```r
@@ -83,9 +84,11 @@ We're going to use packages to organize and clean our data.
 mortality <- mortality %>% 
   select(-contains("X."))
 
-
+# Now we can separate the AGE_CLASS column into two columns specifying the 
+# minumum age and the maximum age
 clean_mort <- mortality %>%
-  separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", extra = "merge") %>% 
+  separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", 
+           extra = "merge") %>% 
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
 
@@ -175,14 +178,6 @@ head(population_gbpu)
 ## 5                   Cassiar      612      35803 17.093540
 ## 6          Central Monashee      147       6155 23.883022
 ```
-
-
-
-
-## All columns should have the same data type
-
-
-
 
 ### Let's explore the gbpu spatial object. 
 
