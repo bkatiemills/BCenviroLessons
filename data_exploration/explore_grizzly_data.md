@@ -31,19 +31,19 @@ Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` pac
 ```r
 unzip("data/DataBC_GBPU.zip", exdir = "data")
 
-gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
+gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
                 encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
 ```
 
 ```
 ## OGR data source with driver: ESRI Shapefile 
-## Source: "data/GBPU_BC/", layer: "GBPU_BC_polygon"
+## Source: "data/GBPU_BC", layer: "GBPU_BC_polygon"
 ## with 278 features
 ## It has 9 fields
 ```
 
 ```
-## Warning in readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon",
+## Warning in readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon",
 ## encoding = "ESRI Shapefile", : Z-dimension discarded
 ```
 
@@ -249,7 +249,7 @@ gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
 plot(gbpu)
 ```
 
-![](explor_CCEEI_files/figure-html/gbpu_map-1.png) 
+![](explore_grizzly_data_files/figure-html/gbpu_map-1.png) 
 
 Now that we have a map of GBPUs, and a data frame with a single population estimate per GBPU, we can merge the population estimates into the SpatialPolygonsDataFrame.
 
@@ -297,5 +297,5 @@ ggplot(gbpu_df, aes(x = long, y = lat, group = group)) +
   theme_minimal()
 ```
 
-![](explor_CCEEI_files/figure-html/density-map-1.png) 
+![](explore_grizzly_data_files/figure-html/density-map-1.png) 
 

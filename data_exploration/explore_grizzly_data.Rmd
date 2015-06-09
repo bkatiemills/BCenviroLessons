@@ -34,7 +34,7 @@ Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` pac
 ```{r messate = FALSE}
 unzip("data/DataBC_GBPU.zip", exdir = "data")
 
-gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
+gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
                 encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
 ```
 
