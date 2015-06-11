@@ -2,6 +2,10 @@
   
 June 5, 2015  
 
+In this lesson, we are going to be using open data from [DataBC](http://data.gov.bc.ca) to learn about cleaning and tidying data, and merging tabular data with spatial data so we can visualize it.
+
+We're going to use a number of packages in this lesson, so we will start with loading them all:
+
 
 ```r
 library(tidyr)
@@ -14,39 +18,9 @@ library(ggplot2)
 options(knitr.table.format = "markdown")
 ```
 
+### Grizzly bear data: population estimates and mortality history
 
-### Grizzly Bear Population Units
-
-First, you will need to get the data. Unfortunately, unlike the `.csv` files 
-that we were able to read/download directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the 
-**Go To Resource** button and submit the form with the following settings:
-
-![](img/Griz_form.png)
-
-When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
-
-Unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
-
-
-```r
-unzip("data/DataBC_GBPU.zip", exdir = "data")
-
-gbpu <- readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon", 
-                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
-```
-
-```
-## OGR data source with driver: ESRI Shapefile 
-## Source: "data/GBPU_BC/", layer: "GBPU_BC_polygon"
-## with 278 features
-## It has 9 fields
-```
-
-```
-## Warning in readOGR(dsn = "data/GBPU_BC/", layer = "GBPU_BC_polygon",
-## encoding = "ESRI Shapefile", : Z-dimension discarded
-```
-
+DataBC has data on [population estimates](http://catalogue.data.gov.bc.ca/dataset/2012-grizzly-bear-population-estimates) and [mortality](http://catalogue.data.gov.bc.ca/dataset/history-of-grizzly-bear-mortalities). Let's download and explore both:
 
 
 ```r
@@ -56,8 +30,7 @@ mortality <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-anim
 population <- read.csv("http://www.env.gov.bc.ca/soe/archive/data/plants-and-animals/2012_Grizzly_Status/Grizzly_population_estimate_2012.csv", stringsAsFactors = FALSE)
 ```
 
-
-Now that we have the data, let's look at the top of it. 
+Now that we have the data, let's have a look. The `head` function shows us the first six rows of data: 
 
 
 ```r
@@ -75,7 +48,7 @@ kable(head(mortality))
 | 12100|      1976| 402|      35|Flathead               |Hunter Kill |M   |'10-14    |no      |NA  |NA  |NA  |A limited number of records with a value of 'no' in the SPATIAL column have not been spatially verified and thus may be assigned to the incorrect Management Unit (MU); most of these assignment errors are from 1976-1980. |
 | 12099|      1976| 402|      35|Flathead               |Hunter Kill |M   |'15+      |no      |NA  |NA  |NA  |                                                                                                                                                                                                                            |
 
-We're going to use packages to organize and clean our data.
+We're going to use the [dplyr](https://github.com/hadley/dplyr) and [tidyr](https://github.com/hadley/tidyr) packages to organize and clean our data. First, we'll work on the mortality data:
 
 
 ```r
@@ -83,9 +56,11 @@ We're going to use packages to organize and clean our data.
 mortality <- mortality %>% 
   select(-contains("X."))
 
-
+# Now we can separate the AGE_CLASS column into two columns specifying the 
+# minumum age and the maximum age
 clean_mort <- mortality %>%
-  separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", extra = "merge") %>% 
+  separate(AGE_CLASS, into = c("minimum_age", "maximum_age"), sep = "-", 
+           extra = "merge") %>% 
   mutate(minimum_age = extract_numeric(minimum_age),
          maximum_age = extract_numeric(maximum_age))
 
@@ -103,7 +78,7 @@ kable(head(clean_mort))
 | 12100|      1976| 402|      35|Flathead               |Hunter Kill |M   |          10|          14|no      |
 | 12099|      1976| 402|      35|Flathead               |Hunter Kill |M   |          15|          NA|no      |
 
-Let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
+Next let's tidy up the population data. The first, eighth, and ninth columns (`X.`) doesn't contain any useful information, so we can get rid if it:
 
 
 ```r
@@ -176,17 +151,37 @@ head(population_gbpu)
 ## 6          Central Monashee      147       6155 23.883022
 ```
 
+### Grizzly Bear Population Units spatial data
+
+First, you will need to get the data. Unfortunately, unlike the `.csv` files, we are unable to read/download this directly from DataBC. Visit the [metadata record](http://catalogue.data.gov.bc.ca/dataset/grizzly-bear-population-units/resource/7a7713f9-bcbd-46b8-968a-03d343d367fb) for the data at DataBC. Click on the **Go To Resource** button and submit the form with the following settings:
+
+![](img/Griz_form.png)
+
+When you get the email with the link to the zip file, save it in your working directory as `data/DataBC_GBPU.zip`
+
+Next we'll unzip the file, and import the shapefile. You will need the `sp` and `rgdal` packages
 
 
+```r
+unzip("data/DataBC_GBPU.zip", exdir = "data")
 
-## All columns should have the same data type
+gbpu <- readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon", 
+                encoding = "ESRI Shapefile", stringsAsFactors = FALSE)
+```
 
+```
+## OGR data source with driver: ESRI Shapefile 
+## Source: "data/GBPU_BC", layer: "GBPU_BC_polygon"
+## with 278 features
+## It has 9 fields
+```
 
+```
+## Warning in readOGR(dsn = "data/GBPU_BC", layer = "GBPU_BC_polygon",
+## encoding = "ESRI Shapefile", : Z-dimension discarded
+```
 
-
-### Let's explore the gbpu spatial object. 
-
-It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
+Let's explore the gbpu spatial object. It is of class `SpatialPolygonsDataFrame`, which is a special class of **R** object for representing spatial data, implemented in the `sp` package.
 
 
 ```r
@@ -249,7 +244,7 @@ gbpu <- gbpu[gbpu$GBPU_VERS == 2012, ]
 plot(gbpu)
 ```
 
-![](explor_CCEEI_files/figure-html/gbpu_map-1.png) 
+![](explore_grizzly_data_files/figure-html/gbpu_map-1.png) 
 
 Now that we have a map of GBPUs, and a data frame with a single population estimate per GBPU, we can merge the population estimates into the SpatialPolygonsDataFrame.
 
@@ -297,5 +292,5 @@ ggplot(gbpu_df, aes(x = long, y = lat, group = group)) +
   theme_minimal()
 ```
 
-![](explor_CCEEI_files/figure-html/density-map-1.png) 
+![](explore_grizzly_data_files/figure-html/density-map-1.png) 
 
